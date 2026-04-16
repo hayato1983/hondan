@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本棚</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#f7f6f3;color:#1a1a1a;min-height:100vh}
+.header{background:#fff;border-bottom:1px solid #e8e5e0;padding:12px 16px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px;font-weight:600;flex:1}
+.filter-btns{display:flex;gap:3px;flex-wrap:wrap}
+.fb{padding:5px 10px;font-size:12px;border:1px solid #ddd;border-radius:99px;background:none;color:#666;cursor:pointer}
+.fb.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.add-area{background:#fff;padding:12px 16px;border-bottom:1px solid #e8e5e0}
+.search-tabs{display:flex;gap:4px;margin-bottom:10px}
+.stab{padding:5px 14px;font-size:12px;border:1px solid #ddd;border-radius:99px;background:none;color:#666;cursor:pointer}
+.stab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.search-row{display:flex;gap:8px}
+.search-row input{flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#f7f6f3}
+.btn{padding:8px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn-p{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-nb{background:#4285f4;color:#fff;border-color:#4285f4;font-size:12px}
+.search-hint{font-size:11px;color:#aaa;margin-top:6px}
+.search-drop{background:#fff;padding:0 16px 12px;display:flex;flex-direction:column;gap:6px}
+.sd-item{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid #eee;border-radius:8px;background:#f7f6f3}
+.sd-thumb{width:36px;height:54px;object-fit:cover;border-radius:3px;flex-shrink:0;background:#e8e5e0}
+.sd-info{flex:1;min-width:0}
+.sd-t{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:2px}
+.sd-s{font-size:11px;color:#888}
+.stats{display:flex;gap:6px;padding:10px 16px;background:#fff;border-bottom:1px solid #e8e5e0}
+.stat{background:#f7f6f3;border-radius:8px;padding:8px 6px;flex:1;text-align:center}
+.stat-n{font-size:18px;font-weight:600}
+.stat-l{font-size:10px;color:#888;margin-top:1px}
+.shelf-section{padding:12px 16px 0}
+.shelf-label{font-size:11px;font-weight:600;color:#888;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.shelf-label::after{content:'';flex:1;height:1px;background:#e8e5e0}
+.shelf-row{display:flex;gap:10px;flex-wrap:wrap;padding-bottom:16px}
+.book-card{width:100px;cursor:pointer;flex-shrink:0}
+.cover-wrap{width:100px;height:150px;border-radius:6px;overflow:hidden;border:1px solid #e0ddd8;background:#e8e5e0;margin-bottom:7px}
+.cover-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.no-cover{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;font-size:11px;color:#999;line-height:1.4}
+.card-title{font-size:11px;font-weight:500;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:2px}
+.card-author{font-size:10px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-stars{font-size:11px;color:#E9A800}
+.empty-shelf{font-size:12px;color:#bbb;padding:4px 0 16px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:50;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+.overlay.open{display:flex}
+.sheet{background:#fff;border-radius:12px;padding:18px;width:min(440px,100%);border:1px solid #e0ddd8;max-height:85vh;overflow-y:auto}
+.sheet-top{display:flex;gap:12px;margin-bottom:14px}
+.sheet-cover{width:72px;height:108px;object-fit:cover;border-radius:4px;flex-shrink:0;background:#e8e5e0}
+.lbl{font-size:11px;color:#888;margin-bottom:3px}
+.val{font-size:13px;margin-bottom:10px}
+select,textarea,input[type=date]{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;background:#f7f6f3;color:#1a1a1a;margin-bottom:10px}
+textarea{resize:vertical;min-height:70px}
+.synopsis{font-size:12px;color:#666;line-height:1.7;background:#f7f6f3;padding:10px;border-radius:8px;margin-bottom:14px}
+.star-row{display:flex;gap:2px;margin-bottom:12px}
+.sb{font-size:24px;background:none;border:none;cursor:pointer;opacity:.2;line-height:1;color:#E9A800;padding:2px}
+.sb.on{opacity:1}
+.sheet-actions{display:flex;gap:8px;justify-content:flex-end}
+.export-bar{background:#fff;border-top:1px solid #e8e5e0;padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.export-label{font-size:11px;color:#888;width:100%;margin-bottom:2px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:8px 16px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:200}
+.toast.show{opacity:1}
+.loading-bar{background:#fff;padding:10px 16px;font-size:12px;color:#888;border-bottom:1px solid #e8e5e0;display:none}
+.more-btn{text-align:center;padding:8px 0 4px}
+.mbadge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:99px;background:#FAEEDA;color:#854F0B;margin-left:3px}
+@media(max-width:600px){
+  .search-row input{font-size:16px;padding:10px 12px}
+  .btn{padding:10px 14px}
+  .overlay{padding:0;align-items:flex-end}
+  .sheet{border-radius:16px 16px 0 0;width:100%;max-height:90vh;padding:20px 16px 32px}
+  select,textarea,input[type=date]{font-size:16px}
+  .sb{font-size:30px;padding:4px}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>本棚</h1>
+  <div class="filter-btns">
+    <button class="fb on" onclick="setFilter('all',this)">すべて</button>
+    <button class="fb" onclick="setFilter('want',this)">読みたい</button>
+    <button class="fb" onclick="setFilter('reading',this)">読書中</button>
+    <button class="fb" onclick="setFilter('done',this)">読了</button>
+  </div>
+</div>
+<div class="add-area">
+  <div class="search-tabs">
+    <button class="stab on" onclick="setSearchMode('book',this)">本・小説</button>
+    <button class="stab" onclick="setSearchMode('manga',this)">漫画</button>
+  </div>
+  <div class="search-row">
+    <input id="q" type="text" placeholder="タイトルで検索..." onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="btn btn-p" onclick="doSearch()">検索</button>
+  </div>
+  <div class="search-hint" id="hint">タイトルに絞って検索します</div>
+</div>
+<div id="sd" class="search-drop"></div>
+<div id="loading-bar" class="loading-bar">読み込み中...</div>
+<div id="stats" class="stats"></div>
+<div id="shelf"></div>
+<div class="export-bar">
+  <div class="export-label">出力</div>
+  <button class="btn" onclick="exportMdZip()">個別MD（ZIP）</button>
+  <button class="btn btn-nb" onclick="exportNotebookLM()">NotebookLM用</button>
+  <button class="btn" onclick="exportCsv()">CSV</button>
+</div>
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const GAS_URL='https://script.google.com/macros/s/AKfycbzMEczjs7DNXWFKmI2gDUCh2-FlJ0cSsaO0TEAoA0xQ4-n6LRUZSnFfDz5g55V59ELgrg/exec';
+const BKEY='AIzaSyBJrmLD3RVAGL8266ctUGQXluSEG7GQvck';
+let books=[],cur=null,curR=0,filterStatus='all',searchPage=1,lastQuery='',searchMode='book';
+let searchCache=[];
+const sl={want:'読みたい',reading:'読書中',done:'読了'};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+async function gasGet(p){
+  const r=await fetch(GAS_URL+'?'+new URLSearchParams(p));
+  return r.json();
+}
+
+async function loadBooks(){
+  document.getElementById('loading-bar').style.display='block';
+  try{const d=await gasGet({action:'getAll'});books=d.books||[];render();}
+  catch(e){showToast('読み込みエラー');}
+  document.getElementById('loading-bar').style.display='none';
+}
+
+async function saveToGAS(book){
+  try{await gasGet({action:'save',book:JSON.stringify(book)});}
+  catch(e){showToast('保存エラー');}
+}
+
+async function deleteFromGAS(id){
+  try{await gasGet({action:'delete',id:id});}
+  catch(e){showToast('削除エラー');}
+}
+
+function renderStats(){const w=books.filter(b=>b.status==='want').length,r=books.filter(b=>b.status==='reading').length,d=books.filter(b=>b.status==='done').length;document.getElementById('stats').innerHTML='<div class="stat"><div class="stat-n">'+books.length+'</div><div class="stat-l">合計</div></div><div class="stat"><div class="stat-n">'+w+'</div><div class="stat-l">読みたい</div></div><div class="stat"><div class="stat-n">'+r+'</div><div class="stat-l">読書中</div></div><div class="stat"><div class="stat-n">'+d+'</div><div class="stat-l">読了</div></div>';}
+
+function renderShelf(){const sections=filterStatus==='all'?[{key:'reading',label:'読書中'},{key:'want',label:'読みたい'},{key:'done',label:'読了'}]:[{key:filterStatus,label:sl[filterStatus]}];let html='';sections.forEach(s=>{const list=books.filter(b=>b.status===s.key);html+='<div class="shelf-section"><div class="shelf-label">'+s.label+'</div><div class="shelf-row">';if(!list.length){html+='<div class="empty-shelf">まだ本がありません</div>';}else list.forEach(b=>{const cover=b.cover?'<img src="'+esc(b.cover)+'" alt="" loading="lazy">':'<div class="no-cover">'+esc(b.title)+'</div>';const stars=b.rating?'<div class="card-stars">'+'★'.repeat(Number(b.rating))+'</div>':'';const badge=b.isManga?'<span class="mbadge">漫画</span>':'';html+='<div class="book-card" onclick="openSheet(\''+b.id+'\')"><div class="cover-wrap">'+cover+'</div><div class="card-title">'+esc(b.title)+badge+'</div><div class="card-author">'+esc(b.author||'')+'</div>'+stars+'</div>';});html+='</div></div>';});document.getElementById('shelf').innerHTML=html;}
+
+function render(){renderStats();renderShelf();}
+function setFilter(s,el){filterStatus=s;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderShelf();}
+function setSearchMode(mode,el){searchMode=mode;document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));el.classList.add('on');document.getElementById('q').placeholder=mode==='manga'?'漫画タイトルで検索...':'タイトルで検索...';document.getElementById('hint').textContent=mode==='manga'?'漫画・コミックを検索します':'本・小説をタイトルで検索します';document.getElementById('sd').innerHTML='';searchCache=[];}
+
+function fetchBooks(query,startIndex,callback){
+  fetch('https://www.googleapis.com/books/v1/volumes?q='+encodeURIComponent(query)+'&maxResults=5&startIndex='+startIndex+'&key='+BKEY)
+  .then(r=>r.json()).then(callback).catch(()=>callback({items:[]}));
+}
+
+function doSearch(append){
+  append=!!append;
+  const q=document.getElementById('q').value.trim();
+  if(!q)return;
+  if(!append){searchPage=1;lastQuery=q;document.getElementById('sd').innerHTML='';searchCache=[];}
+  const sd=document.getElementById('sd');
+  const prev=append?sd.innerHTML.replace(/<div class="more-btn">[\s\S]*$/,''):'';
+  sd.innerHTML=prev+'<div id="searching" style="padding:8px 0;font-size:12px;color:#888">検索中...</div>';
+  const words=lastQuery.trim().split(/\s+/);
+  const intitleQuery=searchMode==='manga'?lastQuery.trim().split(/\s+/).join('+'):words.map(w=>'intitle:'+w).join('+');
+  const normalQuery=lastQuery.trim().split(/\s+/).join('+');
+  const startIndex=(searchPage-1)*5;
+  fetchBooks(intitleQuery,startIndex,function(d){
+    if(d.items&&d.items.length){showResults(d.items,prev,append);}
+    else{fetchBooks(normalQuery,startIndex,function(d2){
+      if(d2.items&&d2.items.length){showResults(d2.items,prev,append);}
+      else{const el=document.getElementById('searching');if(el)el.remove();sd.innerHTML=(append?prev:'')+'<div style="padding:8px 0;font-size:12px;color:#aaa">見つかりませんでした</div>';}
+    });}
+  });
+}
+
+function showResults(items,prev,append){
+  const sd=document.getElementById('sd');
+  const el=document.getElementById('searching');if(el)el.remove();
+  const startIdx=searchCache.length;
+  items.forEach(function(item){
+    const v=item.volumeInfo;
+    searchCache.push({gid:item.id,title:v.title||'不明',author:(v.authors||[]).join('・'),pub:v.publisher||'',thumb:(v.imageLinks&&v.imageLinks.thumbnail||'').replace('http:','https:'),desc:(v.description||'').slice(0,120),isManga:searchMode==='manga'});
+  });
+  let html='';
+  for(let i=startIdx;i<searchCache.length;i++){
+    const item=searchCache[i];
+    const thumbHtml=item.thumb?'<img class="sd-thumb" src="'+item.thumb+'" alt="">':'<div class="sd-thumb"></div>';
+    const badge=item.isManga?'<span class="mbadge">漫画</span>':'';
+    html+='<div class="sd-item">'+thumbHtml+'<div class="sd-info"><div class="sd-t">'+esc(item.title)+badge+'</div><div class="sd-s">'+esc(item.author)+(item.pub?' / '+esc(item.pub):'')+'</div></div><button class="btn btn-p" style="font-size:11px;padding:6px 10px" onclick="addBookByIndex('+i+')">追加</button></div>';
+  }
+  searchPage++;
+  sd.innerHTML=(append?prev:'')+html+'<div class="more-btn"><button class="btn" style="font-size:12px" onclick="doSearch(true)">もっと見る</button></div>';
+}
+
+async function addBookByIndex(idx){
+  const item=searchCache[idx];
+  if(!item){showToast('エラー');return;}
+  if(books.find(b=>b.googleId===item.gid)){showToast('すでに追加済みです');return;}
+  const book={id:Date.now().toString(),googleId:item.gid,title:item.title,author:item.author,publisher:item.pub,cover:item.thumb,synopsis:item.desc,status:'want',rating:0,note:'',finishedAt:'',addedAt:new Date().toISOString().slice(0,10),isManga:!!item.isManga};
+  showToast('追加中...');
+  await saveToGAS(book);
+  books.unshift(book);render();
+  document.getElementById('sd').innerHTML='';document.getElementById('q').value='';searchCache=[];
+  showToast('「'+item.title+'」を追加しました');
+}
+
+function openSheet(id){
+  const b=books.find(x=>x.id===id);if(!b)return;
+  cur=id;curR=Number(b.rating)||0;
+  const cover=b.cover?'<img class="sheet-cover" src="'+esc(b.cover)+'" alt="">':'<div class="sheet-cover"></div>';
+  const badge=b.isManga?'<span class="mbadge">漫画</span>':'';
+  const wo=b.status==='want'?'selected':'';
+  const ro=b.status==='reading'?'selected':'';
+  const doo=b.status==='done'?'selected':'';
+  document.getElementById('sheet').innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px"><div style="font-size:15px;font-weight:600;flex:1;padding-right:10px;line-height:1.4">'+esc(b.title)+badge+'</div><button onclick="closeSheet()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999;padding:0;line-height:1">&#10005;</button></div><div class="sheet-top">'+cover+'<div style="flex:1;min-width:0"><div class="lbl">著者</div><div class="val">'+esc(b.author||'—')+'</div><div class="lbl">出版社</div><div class="val">'+esc(b.publisher||'—')+'</div><div class="lbl">ステータス</div><select id="s-status"><option value="want" '+wo+'>読みたい</option><option value="reading" '+ro+'>読書中</option><option value="done" '+doo+'>読了</option></select></div></div><div class="synopsis">'+esc(b.synopsis||'概要なし')+'</div><div class="lbl">評価</div><div class="star-row" id="s-stars"></div><div class="lbl">感想・メモ</div><textarea id="s-note">'+esc(b.note||'')+'</textarea><div class="lbl">読了日</div><input type="date" id="s-date" value="'+(b.finishedAt||'')+'"><div class="sheet-actions"><button class="btn" style="color:#c00" onclick="delBook()">削除</button><button class="btn btn-p" onclick="saveSheet()">保存</button></div>';
+  renderSS(curR);document.getElementById('overlay').classList.add('open');
+}
+function renderSS(n){let h='';for(let i=1;i<=5;i++)h+='<button class="sb'+(i<=n?' on':'')+'" onclick="setSR('+i+')">★</button>';document.getElementById('s-stars').innerHTML=h;}
+function setSR(n){curR=n;renderSS(n);}
+
+async function saveSheet(){
+  const b=books.find(x=>x.id===cur);if(!b)return;
+  b.status=document.getElementById('s-status').value;
+  b.note=document.getElementById('s-note').value;
+  b.rating=curR;
+  b.finishedAt=document.getElementById('s-date').value;
+  showToast('保存中...');
+  await saveToGAS(b);
+  render();closeSheet();showToast('保存しました');
+}
+
+async function delBook(){
+  if(!confirm('削除しますか？'))return;
+  showToast('削除中...');
+  await deleteFromGAS(cur);
+  books=books.filter(x=>x.id!==cur);
+  render();closeSheet();showToast('削除しました');
+}
+
+function closeSheet(){document.getElementById('overlay').classList.remove('open');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2200);}
+
+function exportNotebookLM(){if(!books.length){showToast('本が登録されていません');return;}let text='# 本棚データ\n\n更新日: '+new Date().toLocaleDateString('ja-JP')+'\n総冊数: '+books.length+'冊\n\n---\n\n';['done','reading','want'].forEach(status=>{const list=books.filter(b=>b.status===status);if(!list.length)return;text+='## '+sl[status]+'（'+list.length+'冊）\n\n';list.forEach(b=>{const r=Number(b.rating)||0;text+='### '+b.title+(b.isManga?' [漫画]':'')+'\n- 著者: '+(b.author||'不明')+'\n- 評価: '+'★'.repeat(r)+'☆'.repeat(5-r)+'\n'+(b.synopsis?'\n概要: '+b.synopsis+'\n':'')+(b.note?'\n感想: '+b.note+'\n':'')+'\n---\n\n';});});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'}));a.download='hondan_notebooklm.txt';a.click();showToast('出力しました');}
+async function exportMdZip(){if(!books.length){showToast('本が登録されていません');return;}const zip=new JSZip(),folder=zip.folder('Books');books.forEach(b=>{const r=Number(b.rating)||0;const fname=b.title.replace(/[\\/:*?"<>|]/g,'_').slice(0,60)+'.md';const md='---\ntitle: "'+b.title+'"\nauthor: "'+(b.author||'')+'"\ncover: "'+(b.cover||'')+'"\nstatus: '+b.status+'\nrating: '+r+'\nisManga: '+!!b.isManga+'\nadded: "'+(b.addedAt||'')+'"\nfinished: "'+(b.finishedAt||'')+'"\n---\n\n'+(b.cover?'![cover|200]('+b.cover+')\n\n':'')+'# '+b.title+'\n\n| 項目 | 内容 |\n|------|------|\n| 著者 | '+(b.author||'—')+' |\n| 評価 | '+'★'.repeat(r)+'☆'.repeat(5-r)+' |\n| 種別 | '+(b.isManga?'漫画':'本・小説')+' |\n| 読了日 | '+(b.finishedAt||'—')+' |\n\n## 概要\n\n'+(b.synopsis||'なし')+'\n\n## 感想\n\n'+(b.note||'なし')+'\n';folder.file(fname,md);});const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hondan_md.zip';a.click();showToast('ZIPをダウンロードしました');}
+function exportCsv(){if(!books.length){showToast('本が登録されていません');return;}const rows=[['タイトル','著者','出版社','種別','ステータス','評価','感想','追加日','読了日']];books.forEach(b=>rows.push([b.title,b.author||'',b.publisher||'',b.isManga?'漫画':'本・小説',sl[b.status]||'',b.rating||0,b.note||'',b.addedAt||'',b.finishedAt||'']));const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));a.download='hondan.csv';a.click();}
+loadBooks();
+</script>
+</body>
+</html>
